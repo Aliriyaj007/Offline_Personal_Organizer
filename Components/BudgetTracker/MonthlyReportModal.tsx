@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { Transaction, TransactionType, Currency } from '../../types';
 import { USD_TO_INR_RATE } from '../../constants';
@@ -22,6 +22,14 @@ const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({ isOpen, onClose
   const [aiAnalysis, setAiAnalysis] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isApiKeyMissing, setIsApiKeyMissing] = useState(false);
+
+  useEffect(() => {
+    // Safely check for API key availability in a browser environment
+    if (typeof process === 'undefined' || typeof process.env === 'undefined' || !process.env.API_KEY) {
+      setIsApiKeyMissing(true);
+    }
+  }, []);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
@@ -48,8 +56,8 @@ const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({ isOpen, onClose
   }, [filteredTransactions]);
   
   const handleGenerateAnalysis = async () => {
-    if (!process.env.API_KEY) {
-      setError('API key is not configured. Please set the API_KEY environment variable.');
+    if (isApiKeyMissing) {
+      setError('AI feature is unavailable: API key is not configured for this environment.');
       return;
     }
     setIsLoading(true);
@@ -87,7 +95,7 @@ const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({ isOpen, onClose
       setAiAnalysis(response.text);
     } catch (e) {
       console.error(e);
-      setError('Failed to generate AI analysis. Please try again later.');
+      setError('Failed to generate AI analysis. The API key might be invalid or there was a network issue.');
     } finally {
       setIsLoading(false);
     }
@@ -132,14 +140,15 @@ const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({ isOpen, onClose
 
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200 border-b pb-2 border-gray-300 dark:border-gray-600">AI-Powered Analysis</h3>
-              <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+              <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg min-h-[80px]">
                 {isLoading && <div className="flex justify-center items-center"><Spinner /></div>}
                 {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
                 {aiAnalysis && <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{aiAnalysis}</p>}
-                {!aiAnalysis && !isLoading && !error && <p className="text-sm text-gray-500 dark:text-gray-400">Click the button to get financial insights from AI.</p>}
+                {!aiAnalysis && !isLoading && !error && !isApiKeyMissing && <p className="text-sm text-gray-500 dark:text-gray-400">Click the button to get financial insights from AI.</p>}
+                 {isApiKeyMissing && <p className="text-sm text-yellow-600 dark:text-yellow-400">AI analysis is unavailable because an API key has not been provided in this environment.</p>}
               </div>
-              <button onClick={handleGenerateAnalysis} disabled={isLoading} className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:disabled:bg-indigo-800 transition-colors">
-                {isLoading ? <><Spinner /> Analyzing...</> : 'Get AI Analysis'}
+              <button onClick={handleGenerateAnalysis} disabled={isLoading || isApiKeyMissing} className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:disabled:bg-indigo-800 dark:disabled:cursor-not-allowed transition-colors">
+                {isLoading ? <><Spinner /> Analyzing...</> : (isApiKeyMissing ? 'AI Unavailable' : 'Get AI Analysis')}
               </button>
             </div>
             
