@@ -1,7 +1,7 @@
 const CACHE_NAME = 'offline-organizer-cache-v1.1'; // Increment version for updates
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
+  '.',
+  './index.html',
   // Note: esm.sh URLs are versioned, so they are effectively immutable and good for caching.
   // If you had local JS/CSS bundles, you'd list them here.
   // The service worker will also cache network requests made by the app dynamically.
@@ -9,9 +9,9 @@ const ASSETS_TO_CACHE = [
   // the browser handles fetching them. The service worker can cache these network requests.
   // We'll rely on dynamic caching for JS modules and Recharts for simplicity here.
   // If you had specific bundled assets (e.g. /app.js, /styles.css), list them.
-  '/logo.svg', // Add the main logo
-  '/icons/icon-192x192.png', // Placeholder, actual PNG needed
-  '/icons/icon-512x512.png'  // Placeholder, actual PNG needed
+  './logo.svg', // Add the main logo
+  './icons/icon-192x192.png', // Placeholder, actual PNG needed
+  './icons/icon-512x512.png'  // Placeholder, actual PNG needed
 ];
 
 // Install event: Open cache and add core assets.
@@ -67,7 +67,7 @@ self.addEventListener('fetch', event => {
           // If network fails, try to serve from cache
           return caches.match(event.request)
             .then(cachedResponse => {
-              return cachedResponse || caches.match('/index.html'); // Fallback to index.html
+              return cachedResponse || caches.match('./index.html'); // Fallback to index.html
             });
         })
     );
