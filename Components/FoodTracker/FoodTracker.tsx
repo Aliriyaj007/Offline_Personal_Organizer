@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo } from 'react';
 import { FoodLog, FoodItem } from '../../types';
 import CalorieTrackerIcon from '../icons/CalorieTrackerIcon';
