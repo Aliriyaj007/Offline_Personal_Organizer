@@ -1,0 +1,5 @@
+{
+  "name": "Offline Personal Organizer",
+  "description": "An offline-first application for managing your budget, daily to-do tasks, and grocery lists. All data is stored locally in your browser.",
+  "requestFramePermissions": []
+}
